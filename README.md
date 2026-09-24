@@ -4,7 +4,6 @@
 > — DevOpsDays Cairo 2026, 26 September, CREATIVA Innovation Hub, Giza.
 > Everything below runs offline on your laptop in about two minutes.
 
-
 A deliberately naive "agent" ([`agent/agent.py`](agent/agent.py)) executes a list of
 attacker-controlled tool-calls ([`agent/attack_tasks.txt`](agent/attack_tasks.txt)) —
 exactly what a prompt-injection payload would smuggle into an agent's tool loop.
@@ -63,9 +62,11 @@ completes — a tight sandbox stops the attacks without getting in the work's wa
 
 `run-unsafe.sh` mounts the host **read-only** (`-v /:/host:ro`) so it can *read*
 sensitive files to prove the point without being able to damage the host. It also
-also adds `--cap-add SYS_ADMIN --security-opt seccomp=unconfined`, which is what a
-carelessly privileged agent runtime looks like in the wild — no syscall filtering and
-a capability that is most of the way to root on the host. Everything runs in a `--rm` container; nothing is installed on the host.
+adds `--cap-add SYS_ADMIN --security-opt seccomp=unconfined`, which is what a
+carelessly privileged agent runtime looks like in the wild — no syscall filtering
+and a capability that is most of the way to root on the host.
+
+Everything runs in a `--rm` container; nothing is installed on the host.
 
 ## Beyond containers
 
