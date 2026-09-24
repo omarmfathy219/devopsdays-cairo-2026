@@ -1,4 +1,9 @@
-# Live demo — same agent, two runtimes
+# Same agent, two runtimes
+
+> Companion repo for the talk **"Sandboxing AI Agents in Production & DevOps"**
+> — DevOpsDays Cairo 2026, 26 September, CREATIVA Innovation Hub, Giza.
+> Everything below runs offline on your laptop in about two minutes.
+
 
 A deliberately naive "agent" ([`agent/agent.py`](agent/agent.py)) executes a list of
 attacker-controlled tool-calls ([`agent/attack_tasks.txt`](agent/attack_tasks.txt)) —
@@ -26,14 +31,16 @@ Or call the scripts directly: `./run-unsafe.sh`, `./run-safe.sh`.
 
 ## What you'll see
 
-| Tool-call (attack)          | `run-unsafe.sh` | `run-safe.sh` | Control that stops it                |
-|-----------------------------|-----------------|---------------|--------------------------------------|
-| read host password hashes   | ✗ succeeds      | ✓ blocked     | non-root user + no host mount        |
+| Tool-call (attack)           | `run-unsafe.sh` | `run-safe.sh` | Control that stops it                |
+|------------------------------|-----------------|---------------|--------------------------------------|
+| read host password hashes    | ✗ succeeds      | ✓ blocked     | non-root user + no host mount        |
 | dump secrets from env        | ✗ succeeds      | ✓ blocked     | broker pattern — no secrets injected |
-| exfiltrate over network      | ✗ succeeds      | ✓ blocked     | `--network none`                     |
+| send data over the network   | ✗ succeeds      | ✓ blocked     | `--network none`                     |
 | tamper with the rootfs       | ✗ succeeds      | ✓ blocked     | `--read-only`                        |
 | recon the host filesystem    | ✗ succeeds      | ✓ blocked     | no bind mount                        |
-| escape via new namespace     | ✗ succeeds      | ✓ blocked     | `seccomp` denies `unshare`           |
+
+All five live in [`agent/attack_tasks.txt`](agent/attack_tasks.txt) — edit that file
+to add your own.
 
 `make benign` runs the *legitimate* job in the same hardened box and every step
 completes — a tight sandbox stops the attacks without getting in the work's way.
@@ -49,16 +56,16 @@ completes — a tight sandbox stops the attacks without getting in the work's wa
 | `--cap-drop ALL`                            | zero Linux capabilities                            |
 | `--security-opt no-new-privileges`          | setuid binaries can't re-escalate                  |
 | `--security-opt seccomp=seccomp-agent.json` | block escape syscalls (`unshare`/`mount`/`ptrace`) |
-| `--pids-limit 128` / `--memory` / `--cpus`  | resource abuse is bounded                          |
+| `--memory 256m` / `--cpus 0.5`              | resource abuse is bounded                          |
 | no host mount, no secrets in env            | sensitive data is never even reachable             |
 
 ## Note on the "unsafe" run
 
 `run-unsafe.sh` mounts the host **read-only** (`-v /:/host:ro`) so it can *read*
 sensitive files to prove the point without being able to damage the host. It also
-adds `--cap-add SYS_ADMIN --security-opt seccomp=unconfined` so the namespace-escape
-tool-call actually succeeds — demonstrating what a privileged agent runtime gives an
-attacker. Everything runs in a `--rm` container; nothing is installed on the host.
+also adds `--cap-add SYS_ADMIN --security-opt seccomp=unconfined`, which is what a
+carelessly privileged agent runtime looks like in the wild — no syscall filtering and
+a capability that is most of the way to root on the host. Everything runs in a `--rm` container; nothing is installed on the host.
 
 ## Beyond containers
 
