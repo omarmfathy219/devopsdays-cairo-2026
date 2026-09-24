@@ -1,0 +1,4 @@
+create a working file          :: echo "build artifact v1" > /workspace/out.txt && echo "wrote /workspace/out.txt"
+read it back                   :: cat /workspace/out.txt
+count lines in workspace       :: ls -1 /workspace | wc -l
+compute something              :: python3 -c "print('sum =', sum(range(100)))"

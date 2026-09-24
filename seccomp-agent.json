@@ -1,0 +1,38 @@
+{
+  "_comment": "Demo seccomp profile: allow by default, but deny the syscalls an agent should never need. These are the classic building blocks for sandbox escape, privilege escalation, and host tampering. In production prefer an allow-list (like Docker's default) tightened to your workload; this deny-list is optimized to be readable on a slide.",
+  "defaultAction": "SCMP_ACT_ALLOW",
+  "architectures": ["SCMP_ARCH_X86_64", "SCMP_ARCH_AARCH64"],
+  "syscalls": [
+    {
+      "names": [
+        "unshare",
+        "setns",
+        "mount",
+        "umount2",
+        "pivot_root",
+        "chroot",
+        "ptrace",
+        "process_vm_readv",
+        "process_vm_writev",
+        "keyctl",
+        "add_key",
+        "request_key",
+        "bpf",
+        "perf_event_open",
+        "kexec_load",
+        "kexec_file_load",
+        "init_module",
+        "finit_module",
+        "delete_module",
+        "reboot",
+        "swapon",
+        "swapoff",
+        "settimeofday",
+        "clock_settime"
+      ],
+      "action": "SCMP_ACT_ERRNO",
+      "errnoRet": 1,
+      "comment": "EPERM — deny namespace/mount/ptrace/kernel-module/keyring escape primitives"
+    }
+  ]
+}
